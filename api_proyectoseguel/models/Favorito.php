@@ -1,0 +1,89 @@
+<?php 
+ 
+// Indicamos que este archivo contiene el modelo Favorito. 
+ 
+// Incluimos la clase Model, que contiene la conexión 
+// a la base de datos. 
+require_once __DIR__ . "/../core/Model.php"; 
+ 
+ 
+// Creamos la clase Favorito. 
+// Al extender Model, puede utilizar la conexión $this->pdo. 
+class Favorito extends Model { 
+ 
+ 
+    // Obtiene la lista de productos favoritos de un usuario. 
+    // Recibe el ID del usuario cuyos favoritos queremos consultar. 
+    public function listar($idUsuario) { 
+ 
+        // Preparamos una consulta SQL para obtener los productos favoritos. 
+        // f.id obtiene el ID del registro en la tabla favoritos. 
+        // p.id AS id_producto obtiene el ID del producto 
+        // y le asigna el nombre id_producto al resultado. 
+        // También obtenemos el nombre, el precio y la imagen del producto. 
+        // JOIN relaciona las tablas favoritos y productos. 
+        // WHERE filtra los resultados por el ID del usuario. 
+        $sql = "SELECT f.id, p.id AS id_producto, p.nombre, p.precio, p.imagen 
+                FROM favoritos f 
+                JOIN productos p ON f.id_producto = p.id 
+                WHERE f.id_usuario = :id_usuario"; 
+ 
+        // Preparamos la consulta utilizando la conexión a la base de datos. 
+        $stmt = $this->pdo->prepare($sql); 
+ 
+        // Ejecutamos la consulta indicando el ID del usuario. 
+        $stmt->execute(["id_usuario" => $idUsuario]); 
+ 
+        // Devolvemos todos los productos encontrados 
+        // como un arreglo de arreglos asociativos. 
+        return $stmt->fetchAll(PDO::FETCH_ASSOC); 
+ 
+    } // Finaliza el método listar. 
+ 
+ 
+ 
+    // Agrega un producto a la lista de favoritos de un usuario. 
+    // Recibe el ID del usuario y el ID del producto. 
+    public function agregar($idUsuario, $idProducto) { 
+ 
+        // Preparamos una consulta SQL para insertar un nuevo favorito. 
+        // Guardamos el usuario y el producto relacionado. 
+        $sql = "INSERT INTO favoritos (id_usuario, id_producto) VALUES 
+(:id_usuario, :id_producto)"; 
+ 
+        // Preparamos la consulta para ejecutarla con parámetros. 
+        $stmt = $this->pdo->prepare($sql); 
+ 
+        // Ejecutamos la consulta enviando los valores correspondientes. 
+        // El método devuelve true si la ejecución se realiza correctamente 
+        // o false si falla. 
+        return $stmt->execute(["id_usuario" => $idUsuario, "id_producto" => 
+$idProducto]); 
+ 
+    } // Finaliza el método agregar. 
+ 
+ 
+ 
+    // Elimina un producto de la lista de favoritos de un usuario. 
+    // Recibe el ID del usuario y el ID del producto que quiere quitar. 
+    public function eliminar($idUsuario, $idProducto) { 
+ 
+        // Preparamos una consulta SQL para eliminar un registro de favoritos. 
+        // Se deben cumplir las dos condiciones: 
+        // que el registro pertenezca al usuario indicado 
+        // y que corresponda al producto indicado. 
+        $sql = "DELETE FROM favoritos WHERE id_usuario = :id_usuario AND 
+id_producto = :id_producto"; 
+ 
+        // Preparamos la consulta SQL. 
+        $stmt = $this->pdo->prepare($sql); 
+ 
+        // Ejecutamos la consulta con los IDs recibidos. 
+        // Devuelve true si la ejecución se realiza correctamente 
+        // o false si ocurre un error. 
+        return $stmt->execute(["id_usuario" => $idUsuario, "id_producto" => 
+$idProducto]); 
+ 
+    } // Finaliza el método eliminar. 
+ 
+} // Finaliza la clase Favorito. 
